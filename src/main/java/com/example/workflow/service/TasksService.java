@@ -37,28 +37,13 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 
 @Service
-@RequiredArgsConstructor
 public class TasksService {
 
-    private  final RepositoryService repositoryService;
+    private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
-    private  final TaskService taskService;
-    private  final HistoryService historyService;
+    private final TaskService taskService;
+    private final HistoryService historyService;
     private final ProcessEngine processEngine;
-    
-    @Autowired
-    public TasksService(
-            RepositoryService repositoryService,
-            RuntimeService runtimeService,
-            TaskService taskService,
-            HistoryService historyService,
-            ProcessEngine processEngine) {
-        this.repositoryService = repositoryService;
-        this.runtimeService = runtimeService;
-        this.taskService = taskService;
-        this.historyService = historyService;
-        this.processEngine = processEngine;
-    }
 
     @Autowired
     private WorkflowRepository workflowRepository;
@@ -66,9 +51,21 @@ public class TasksService {
     @Autowired
     private FormRepository formRepository;
 
-    private String updatedDeploymentId ;
+    private String updatedDeploymentId = null;
 
-
+    public TasksService(
+            RepositoryService repositoryService,
+            RuntimeService runtimeService,
+            TaskService taskService,
+            HistoryService historyService,
+            ProcessEngine processEngine
+    ) {
+        this.repositoryService = repositoryService;
+        this.runtimeService = runtimeService;
+        this.taskService = taskService;
+        this.historyService = historyService;
+        this.processEngine = processEngine;
+    }
     /**
      * Retrieves a list of active tasks.
      * @return a list of active tasks as TaskDto objects.

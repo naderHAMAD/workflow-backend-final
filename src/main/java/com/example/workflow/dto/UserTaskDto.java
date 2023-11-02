@@ -34,22 +34,9 @@ public class UserTaskDto {
     private boolean isFollowUpDateSet;
     private String followUpDate;
 
-    public UserTaskDto(String id, String name, String assignee, String candidateGroups, String candidateUsers,
-			String formKey, String priority, boolean isDueDateSet, String dueDate, boolean isFollowUpDateSet,
-			String followUpDate) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.assignee = assignee;
-		this.candidateGroups = candidateGroups;
-		this.candidateUsers = candidateUsers;
-		this.formKey = formKey;
-		this.priority = priority;
-		this.isDueDateSet = isDueDateSet;
-		this.dueDate = dueDate;
-		this.isFollowUpDateSet = isFollowUpDateSet;
-		this.followUpDate = followUpDate;
-	}
+
+	
+
 
 	/**
      * Creates a new UserTaskDto object based on the provided UserTask object.

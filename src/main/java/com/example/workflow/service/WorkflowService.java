@@ -77,39 +77,9 @@ public class WorkflowService {
                 new ByteArrayInputStream(workflow.getXmlContent().getBytes(StandardCharsets.UTF_8)));
 
 
-        // Inject condition expressions into sequence flows that come just after a gateway
-        Collection<ExclusiveGateway> gateways = modelInstance.getModelElementsByType(ExclusiveGateway.class);
-        for (ExclusiveGateway gateway : gateways) {
-            int pathCounter = 0;
-            List<SequenceFlow> outgoingFlows = new ArrayList<>(gateway.getOutgoing());
-            if (outgoingFlows.size() > 1) {
-                for (SequenceFlow outgoingFlow : outgoingFlows) {
-                    if (outgoingFlow.getTarget() instanceof FlowNode) {
-                        FlowNode targetNode = outgoingFlow.getTarget();
-                        if (targetNode.getIncoming().stream().anyMatch(incoming -> incoming.getSource() == gateway)) {
-                            // Create and set condition expression for sequence flow
-                            ConditionExpression conditionExpression = modelInstance.newInstance(ConditionExpression.class);
-                            conditionExpression.setTextContent("${input == " + pathCounter++ + "}");
-                            outgoingFlow.setConditionExpression(conditionExpression);
-                            // Set name of sequence flow
-                            if (outgoingFlow.getName() == null || outgoingFlow.getName().isEmpty()) {
-                                outgoingFlow.setName("Flow " + pathCounter);
-                                outgoingFlow.builder().name(outgoingFlow.getName()).done();
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
-        // Inject default delegate expression for service tasks without one
-        Collection<ServiceTask> serviceTasks = modelInstance.getModelElementsByType(ServiceTask.class);
-        for (ServiceTask serviceTask : serviceTasks) {
-            if (serviceTask.getCamundaDelegateExpression() == null) {
-                serviceTask.setCamundaDelegateExpression("#{defaultCamundaDelegateClass}");
-            }
-        }
-
+        
+        
         // Inject default delegate expression for send tasks without one and set variables
         Collection<SendTask> sendTasks = modelInstance.getModelElementsByType(SendTask.class);
         for (SendTask sendTask : sendTasks) {
@@ -194,15 +164,6 @@ public class WorkflowService {
         return workflowRepository.findByName(name);
     }
 
-    /**
-     * Updates an existing workflow with the provided XML content and name.
-     * If the workflow does not exist, returns null.
-     *
-     * @param id the ID of the workflow to update
-     * @param workflow the updated workflow object containing the new XML content and name
-     * @return the updated workflow object
-     * @throws IOException if there is an error reading or writing the BPMN model XML content
-     */
     public Workflow updateWorkflowBpmn(String id, Workflow workflow) throws IOException {
         // Check if the workflow exists and retrieve its XML content
         Optional<Workflow> optionalWorkflow = workflowRepository.findById(id);
@@ -216,60 +177,8 @@ public class WorkflowService {
         BpmnModelInstance modelInstance = Bpmn.readModelFromStream(
                 new ByteArrayInputStream(workflow.getXmlContent().getBytes(StandardCharsets.UTF_8)));
 
-        Collection<ExclusiveGateway> gateways = modelInstance.getModelElementsByType(ExclusiveGateway.class);
-        for (ExclusiveGateway gateway : gateways) {
-            int pathCounter = 0;
-            List<SequenceFlow> outgoingFlows = new ArrayList<>(gateway.getOutgoing());
-            if (outgoingFlows.size() > 1) {
-                for (SequenceFlow outgoingFlow : outgoingFlows) {
-                    if (outgoingFlow.getTarget() instanceof FlowNode) {
-                        FlowNode targetNode = outgoingFlow.getTarget();
-                        if (targetNode.getIncoming().stream().anyMatch(incoming -> incoming.getSource() == gateway)) {
-                            ConditionExpression conditionExpression = modelInstance.newInstance(ConditionExpression.class);
-                            conditionExpression.setTextContent("${input == " + pathCounter++ + "}");
-                            outgoingFlow.setConditionExpression(conditionExpression);
-                            if (outgoingFlow.getName() == null) {
-                                outgoingFlow.setName("Flow " + pathCounter); // Set name of sequence flow
-                            }
-                            outgoingFlow.builder()
-                                    .name(outgoingFlow.getName())
-                                    .done();
-                        }
-                    }
-                }
-            }
-        }
-
-        // Inject default delegate expression for service tasks without one
-        Collection<ServiceTask> serviceTasks = modelInstance.getModelElementsByType(ServiceTask.class);
-        for (ServiceTask serviceTask : serviceTasks) {
-            serviceTask.setCamundaDelegateExpression("#{defaultCamundaDelegateClass}");
-        }
-
-        // Inject default delegate expression for send tasks without one and set variables
-        Collection<SendTask> sendTasks = modelInstance.getModelElementsByType(SendTask.class);
-        for (SendTask sendTask : sendTasks) {
-            sendTask.setCamundaDelegateExpression("${defaultSendMailDelegateClass}");
-        }
-
-        // Check if every gateway is preceded by a user task
-        for (FlowElement element : modelInstance.getModelElementsByType(FlowElement.class)) {
-            if (element instanceof Gateway) {
-                Collection<SequenceFlow> incomingFlows = ((Gateway) element).getIncoming();
-                boolean hasUserTaskBefore = false;
-                for (SequenceFlow incomingFlow : incomingFlows) {
-                    if (incomingFlow.getSource() instanceof UserTask) {
-                        hasUserTaskBefore = true;
-                        break;
-                    }
-                }
-                if (!hasUserTaskBefore) {
-                    throw new RuntimeException("Gateway " + element.getId() + " must be preceded by a User Task.");
-                }
-            }
-        }
-
-
+        // Manually set variables for specific elements
+  
 
         // Set the execution listener for every end event in the BPMN
         Collection<EndEvent> endEvents = modelInstance.getModelElementsByType(EndEvent.class);
@@ -319,18 +228,12 @@ public class WorkflowService {
             // Set the deployment ID of the existing workflow to the new deployment ID
             existingWorkflow.setDeploymentId(deploymentUpdate.getId());
 
-            /* Save BPMN XML file to resources/static/bpmn folder
-            String fileName = workflow.getXmlName() + ".xml";
-            File bpmnFile = new File("src/main/resources/static/bpmns", fileName);
-            FileWriter writer = new FileWriter(bpmnFile);
-            Bpmn.writeModelToFile(bpmnFile, modelInstance);
-            writer.close();*/
-
             return workflowRepository.save(existingWorkflow);
         } else {
             return null;
         }
     }
+
 
     /**
      * Deletes the workflow with the given ID.

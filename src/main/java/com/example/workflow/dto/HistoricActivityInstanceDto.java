@@ -15,6 +15,17 @@ public class HistoricActivityInstanceDto {
     private Date endTime;
     private Long durationInMillis;
 
+    // Constructeur sans argument nécessaire pour la désérialisation JSON
+    public HistoricActivityInstanceDto() {
+        this.id = null;
+        this.processInstanceId = null;
+        this.activityName = null;
+        this.activityType = null;
+        this.startTime = null;
+        this.endTime = null;
+        this.durationInMillis = null;
+    }
+
     public HistoricActivityInstanceDto(String id, String processInstanceId, String activityName, String activityType,
 			Date startTime, Date endTime, Long durationInMillis) {
 		super();
@@ -27,6 +38,7 @@ public class HistoricActivityInstanceDto {
 		this.durationInMillis = durationInMillis;
 	}
 
+	// Méthode de fabrication pour créer une instance de HistoricActivityInstanceDto
 	public static HistoricActivityInstanceDto of(HistoricActivityInstance historicActivityInstance) {
         return new HistoricActivityInstanceDto(
                 historicActivityInstance.getId(),

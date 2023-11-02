@@ -16,10 +16,10 @@ import io.jsonwebtoken.*;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${flowvioo.app.jwtSecret}")
+    @Value("${xtenflux.app.jwtSecret}")
     private String jwtSecret;
 
-    @Value("${flowvioo.app.jwtExpirationMs}")
+    @Value("${xtenflux.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
     public String generateJwtToken(UserDetailsImpl userPrincipal) {
